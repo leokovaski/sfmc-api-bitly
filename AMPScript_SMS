@@ -1,0 +1,43 @@
+%%[
+
+  /* DADOS DO SMS */
+  SET @TEXTO = "Aqui vai o texto do SMS a ser enviado."
+  SET @LINK = "https://google.com.br" /* LINK A SER ENCURTADO */
+  /* FIM DADOS DO SMS */
+
+  /* API */
+  SET @groupId = "Bh9jhKCKKa2"
+  SET @endpoint = "https://api-ssl.bitly.com/v4/shorten"
+  SET @contentType = "application/json"
+  SET @accessToken = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  SET @headerName = "Authorization"
+  SET @headerValue = Concat("Bearer ", @accessToken)
+  
+  SET @Contact_Key = [ContactKey]
+
+  IF indexOf(@LINK,'?') > 0 then
+    SET @LinkWithID = Contact(@LINK, '&ContactKey=', @Contact_Key)
+  ELSE
+    SET @LinkWithID = Contact(@LINK, '?ContactKey=', @Contact_Key)
+  ENDIF
+
+  SET @payload = Concat('{"group_guid":"', @groupId,'", "domain": "bit.ly", "long_url":"', @LINK,'"}')
+  SET @request = HTTPPost(@endpoint, @contentType, @payload, @response, @headerName, @headerValue)
+
+]%%
+
+{{.datasource response type=variable source=@response}}
+{{.data}}
+{"target":"@response"}
+{{/data}}
+
+%%[
+
+  VAR @shortLink
+  SET @shortLink = TreatAsContent('{{link}}')
+
+]%%
+
+{{/datasource}}
+
+%%=v(@TEXTO)=%% %%=v(@shortLink)=%% 
